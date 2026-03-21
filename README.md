@@ -1,1 +1,1608 @@
-Paytima
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>OLFU Laguna Enrollment System — With Fee Calculator</title>
+
+
+
+
+   <!-- Google Font -->
+   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+   <link href="https://fonts.googleapis.com/css2?family=CMU+Serif&display=swap" rel="stylesheet">
+
+
+
+
+   <!-- EMAILJS LIBRARY -->
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+
+
+
+   <style>
+       /* ====== Core (original OLFU) styles ====== */
+       :root {
+           --olfu-green: #006837;
+           --olfu-gold: #FFD700;
+           --forest-green: #1b5e20;
+           --hero-bg: #1a1a1a;
+           --gcash-blue: #007DFE;
+           --maya-green: #2ecc71;
+           --maya-dark: #232323;
+           --paypal-blue: #003087;
+       }
+       * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+       body { display: flex; flex-direction: column; min-height: 100vh; background-color: #ffffff; }
+
+
+
+
+       /* ====== PAGE TRANSITIONS ====== */
+       .page {
+           display: none;
+           flex-grow: 1;
+           opacity: 0;
+           transform: translateY(20px);
+           transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+       }
+       .page.active {
+           display: flex;
+           flex-direction: column;
+           opacity: 1;
+           transform: translateY(0);
+       }
+
+
+
+
+       header { background: #fff; padding: 20px 40px; display: flex; align-items: center; border-bottom: 1px solid #eee; }
+       .brand-container { display: flex; align-items: center; gap: 15px; }
+       .logo-placeholder { width: 100px; height: 100px; }
+       .logo-placeholder img { width: 100%; height: 100%; object-fit: cover; clip-path: inset(0 0 20% 0); vertical-align: middle; margin-top: 5px; }
+       .brand-text { color: var(--forest-green); font-size: 1.5rem; font-weight: 400; font-family: 'CMU Serif', serif; text-transform: uppercase; line-height: 1.2; }
+
+
+
+
+       /* Hero / Login */
+       /* Updated .hero for background transitions */
+       .hero { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 0 100px; color: white; min-height: calc(100vh - 100px); }
+       
+       /* New Slide Transitions */
+       .bg-slider { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
+       .bg-slider .slide {
+           position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+           background-size: cover; background-position: center;
+           opacity: 0; animation: fadeAnim 15s infinite;
+           transform: scale(1); transition: transform 5s ease;
+       }
+       .bg-slider .slide-1 { background-image: url('https://image2url.com/r2/default/images/1771942210796-79ccab0e-4af4-4863-b3ee-6f8449ebe52d.jpeg'); animation-delay: 0s; }
+       .bg-slider .slide-2 { background-image: url('https://image2url.com/r2/default/images/1771942358935-eff712e4-2f5e-4e2d-bd58-6d18647de9ed.jpeg'); animation-delay: 5s; }
+       .bg-slider .slide-3 { background-image: url('https://image2url.com/r2/default/images/1771942385167-e027ff8b-a887-4d65-a328-3dc447822a35.jpeg'); animation-delay: 10s; }
+       .bg-slider .slide-overlay {
+           position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+          
+           background: linear-gradient(135deg, rgba(0, 104, 55, 0.5) 0%, rgba(26, 26, 26, 0.6) 100%);
+       }
+       
+       @keyframes fadeAnim {
+           0% { opacity: 0; transform: scale(1); }
+           10% { opacity: 1; transform: scale(1.02); }
+           33% { opacity: 1; transform: scale(1.05); }
+           43% { opacity: 0; transform: scale(1.05); }
+           100% { opacity: 0; transform: scale(1); }
+       }
+
+
+
+
+       .login-form { display: flex; gap: 20px; margin-top: 30px; align-items: center; flex-wrap: wrap; justify-content: center; }
+       .form-input { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 16px 20px; width: 300px; outline: none; border-radius: 6px; transition: 0.3s; font-size: 1.05rem; }
+       .form-input::placeholder { color: rgba(255, 255, 255, 0.7); }
+       .form-input:focus { border-color: var(--olfu-gold); background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+
+
+
+
+       .btn { background: transparent; color: white; border: 2px solid white; padding: 14px 45px; font-weight: 700; border-radius: 50px; cursor: pointer; transition: 0.3s; text-transform: uppercase; font-size: 0.9rem;}
+       .btn:hover { background: white; color: var(--hero-bg); transform: translateY(-3px) scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+       .btn:active { transform: translateY(-1px) scale(0.98); }
+
+
+
+
+       .btn-back { border: 1px solid #ccc; color: #666; background: #eee; padding: 12px 30px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 10px; font-size: 0.9rem; }
+       .btn-back:hover { background: #ddd; color: #333; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+
+
+
+
+       /* Strands */
+       .strand-layout { display: flex; height: calc(100vh - 100px); position: relative; }
+       .left-side { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 5%; }
+       .left-side img { max-width: 300px; width: 100%; height: auto; }
+       .right-side { flex: 1; background: linear-gradient(to right, #fff, transparent 20%), url('https://fatima.edu.ph/wp-content/uploads/2021/11/olfu-building.jpg') center/cover; }
+       .strand-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px 80px; margin-top: 40px; }
+       .strand-link { color: var(--forest-green); font-size: 2.4rem; font-weight: 700; cursor: pointer; text-decoration: none; border: none; background: none; transition: 0.3s; position: relative; }
+       .strand-link:hover { color: var(--olfu-gold); transform: scale(1.1) rotate(2deg); text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+
+
+
+
+       /* Registration */
+       .reg-bg { padding: 50px 20px; display: flex; justify-content: center; background: #f8f9fa; }
+       .reg-card { width: 100%; max-width: 900px; background: #fff; padding: 50px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+       .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+       .full-row { grid-column: span 2; }
+       label { font-weight: 700; font-size: 0.95rem; color: #333; display: block; margin-bottom: 10px; }
+       .reg-input { width: 100%; height: 52px; padding: 12px 15px; border: 1px solid #ddd; border-radius: 6px; background: #fcfcfc; font-size: 1.1rem; transition: 0.3s; }
+       .reg-input:focus { border-color: var(--olfu-green); box-shadow: 0 0 8px rgba(0, 104, 55, 0.2); transform: scale(1.01); }
+
+
+
+
+       /* Payment Selection */
+       .pay-page-bg { background: linear-gradient(135deg, #f0f2f1 0%, #e3ebe6 100%); display: flex; justify-content: center; align-items: center; flex-grow: 1; padding: 20px; }
+       .pay-card {
+           background: white;
+           width: 100%;
+           max-width: 650px;
+           padding: 50px;
+           border-radius: 12px;
+           box-shadow: 0 15px 40px rgba(0, 104, 55, 0.15);
+           border-top: 6px solid var(--olfu-green);
+           position: relative;
+       }
+       .pay-card h2 { color: var(--olfu-green); font-weight: 700; font-family: 'Montserrat', sans-serif; font-size: 2rem; margin-bottom: 5px; text-align: center; }
+       .pay-card p.sub { font-size: 0.95rem; color: #888; margin-bottom: 30px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+     
+       .amount-box {
+           background: #f9fdfa;
+           border: 1px dashed var(--olfu-green);
+           padding: 20px;
+           border-radius: 8px;
+           text-align: center;
+           margin-bottom: 25px;
+       }
+       .amount-box label { text-align: center; color: #555; margin-bottom: 8px; font-size: 1rem; }
+       .amount-box .amount-display { font-size: 2.5rem; font-weight: 800; color: var(--olfu-green); }
+
+
+
+
+       .pay-method-tabs { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+       .method-btn {
+           flex: 1;
+           padding: 14px;
+           border: 1px solid #ddd;
+           background: #fff;
+           color: #666;
+           font-weight: 600;
+           border-radius: 6px;
+           cursor: pointer;
+           transition: 0.3s;
+           font-size: 1rem;
+       }
+       .method-btn.active { background: var(--olfu-green); color: white; border-color: var(--olfu-green); box-shadow: 0 4px 10px rgba(0, 104, 55, 0.3); }
+
+
+
+
+       /* Grid */
+       .provider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+       .provider-btn {
+           background: #fff;
+           border: 1px solid #eee;
+           border-radius: 8px;
+           padding: 20px 10px;
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           transition: 0.3s;
+           height: 120px;
+           box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+       }
+       .provider-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: var(--olfu-green); }
+       .provider-btn span { font-size: 0.95rem; font-weight: 700; margin-top: 10px; color: #444; }
+       .provider-icon { width: 45px; height: 45px; object-fit: contain; margin-bottom: 5px; }
+     
+       /* Receipt */
+       .receipt-container { background: #f0f2f1; padding: 60px 20px; flex-grow: 1; display: flex; justify-content: center; }
+       .receipt-box { position: relative; overflow: hidden; background: white; width: 550px; padding: 50px; border-radius: 15px; border-top: 12px solid var(--olfu-gold); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+       .receipt-row { display: flex; justify-content: space-between; margin-bottom: 18px; font-size: 1.1rem; }
+       .success-badge { background: #e8f5e9; color: #2e7d32; padding: 14px; border-radius: 5px; font-weight: 800; text-align: center; margin-bottom: 25px; border: 2px solid #2e7d32; font-size: 1.05rem; }
+
+       /* Receipt Watermark Styling */
+       .watermark {
+           position: absolute;
+           top: 50%;
+           left: 50%;
+           transform: translate(-50%, -50%) rotate(-45deg);
+           font-size: 3.5rem;
+           color: rgba(0, 104, 55, 0.05);
+           white-space: nowrap;
+           pointer-events: none;
+           z-index: 0;
+           font-weight: 800;
+           text-transform: uppercase;
+           text-align: center;
+           line-height: 1;
+       }
+
+       /* \Ensure receipt content stays above the watermark */
+       .receipt-box > *:not(.watermark) {
+           position: relative;
+           z-index: 1;
+       }
+
+
+
+
+       #loader { display: none; position: fixed; inset: 0; background: rgba(0, 104, 55, 0.95); color: white; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+       #loader h1 { letter-spacing: 2px; font-size: 2rem; }
+       #loader p { margin-top: 20px; font-size: 1.3rem; }
+
+
+
+
+       /* ====== Fee Calculator ====== */
+       .fee-page .calculator-card {
+           background: white; padding: 3rem; border-radius: 16px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); width: 100%; max-width: 950px; margin: 40px auto;
+       }
+       .fee-page h3 { color: #333; border-bottom: 3px solid #3C9E48; padding-bottom: 14px; margin-top: 0; font-size: 1.4rem; }
+       .fee-page .tab-content { display: none; }
+       .fee-page .tab-content.active { display: block; }
+       .fee-page .btn-group { display: flex; gap: 15px; margin-top: 30px; justify-content: center; }
+       .fee-page button { flex: 1; max-width: 250px; padding: 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.05rem; transition: all 0.2s ease; }
+       .fee-page .btn-primary { background-color: #3C9E48; color: white; }
+       .fee-page .btn-primary:hover { background-color: #2e7d38; transform: translateY(-1px); }
+       .fee-page .btn-primary:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+       .fee-page .btn-back { background-color: #f1f1f1; color: #555; max-width: none; }
+       .fee-page .option-box { border: 2px solid #e0e0e0; padding: 30px; margin: 15px 0; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 1.4rem; transition: 0.3s; }
+       .fee-page .option-box:hover { border-color: #3C9E48; background: #f9fff9; color: #3C9E48; }
+       .fee-page .option-box.selected { border-color: #3C9E48; background: #f0faf1; color: #3C9E48; }
+       .fee-page .fee-item { display: flex; align-items: center; padding: 18px 0; border-bottom: 1px solid #f0f0f0; }
+       .fee-page .fee-item input[type="checkbox"], .fee-page .fee-item input[type="radio"], .fee-page .disclaimer input[type="checkbox"] { width: 24px !important; height: 24px !important; min-width: 24px; min-height: 24px; accent-color: #3C9E48; margin-right: 15px; cursor: pointer; flex-shrink: 0; }
+       .fee-page label { font-size: 1.1rem; color: #444; display: flex; align-items: center; cursor: pointer; }
+       .fee-page .price { margin-left: auto; font-weight: bold; color: #333; font-size: 1.1rem; }
+       .fee-page .total-section { margin-top: 30px; text-align: right; padding-top: 20px; border-top: 2px solid #3C9E48; }
+       .fee-page .total-amount-text { color: #3C9E48; font-size: 2.2rem; font-weight: 800; display: block; }
+       .fee-page .guide-scroll { max-height: 320px; overflow-y: auto; background: #ffffff; border: 1px solid #eef0f2; padding: 25px; border-radius: 8px; font-size: 1.02rem; }
+       .fee-page .guide-block { margin-bottom: 35px; padding: 18px; border-left: 4px solid #3C9E48; background: #fcfdfc; }
+       .fee-page .category-header { font-size: 1.2rem; font-weight: 800; color: #2e7d38; text-transform: uppercase; margin-bottom: 12px; display: block;}
+       .fee-page .sub-header { font-weight: bold; color: #444; margin: 16px 0 6px 0; display: block; font-size: 1rem; }
+       .fee-page .fee-line { margin-left: 10px; color: #666; display: block; margin-bottom: 5px; font-size: 1rem; }
+       .fee-page .disclaimer { font-size: 0.95rem; color: #555; margin-top: 25px; padding: 18px; background: #fff9f0; border-radius: 8px; border: 1px solid #ffe8cc; }
+       .fee-page select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; margin: 0 10px; font-family: inherit; font-size: 1.05rem; color: #444; cursor: pointer; outline: none; }
+       .fee-page select:focus { border-color: #3C9E48; }
+
+
+
+
+       /* ====== PAYMENT MODAL STYLES ====== */
+       .modal {
+           display: none;
+           position: fixed;
+           z-index: 2000;
+           left: 0;
+           top: 0;
+           width: 100%;
+           height: 100%;
+           overflow: auto;
+           background-color: rgba(0,0,0,0.6);
+           backdrop-filter: blur(5px);
+           align-items: center;
+           justify-content: center;
+           animation: fadeIn 0.3s;
+       }
+       @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+
+
+
+
+       .modal-content {
+           background-color: #fefefe;
+           margin: auto;
+           border-radius: 12px;
+           width: 90%;
+           max-width: 550px;
+           overflow: hidden;
+           box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+           position: relative;
+           display: flex;
+           flex-direction: column;
+           max-height: 90vh;
+       }
+
+
+
+
+       .modal-header { padding: 24px; color: white; display: flex; justify-content: space-between; align-items: center; }
+       .modal-header h3 { margin: 0; font-size: 1.4rem; }
+       .close-modal { color: white; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1; }
+       .close-modal:hover { color: #ddd; }
+
+
+
+
+       .modal-body { padding: 30px; overflow-y: auto; }
+       .modal-qr-container { text-align: center; margin-bottom: 25px; }
+       .modal-qr-container img { max-width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+       .modal-instructions { font-size: 1.05rem; color: #444; line-height: 1.7; text-align: left; }
+       .modal-instructions a { color: var(--olfu-green); text-decoration: underline; word-break: break-all; }
+       .modal-instructions p { margin: 12px 0; }
+       .modal-instructions ul { margin: 12px 0; }
+       .modal-instructions li { margin: 8px 0; }
+     
+       .modal-input-group { margin-top: 18px; text-align: left; }
+       .modal-input-group label { font-size: 0.95rem; margin-bottom: 8px; }
+       .modal-input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 1.1rem; }
+
+
+
+
+       .modal-footer { padding: 24px; border-top: 1px solid #eee; background: #f9f9f9; display: flex; gap: 12px; }
+       .modal-footer button { padding: 14px; font-size: 1rem; border-radius: 6px; }
+     
+       /* Provider Specific Colors */
+       .theme-gcash { background-color: var(--gcash-blue); }
+       .theme-maya { background-color: var(--maya-dark); border-bottom: 4px solid var(--maya-green); }
+       .theme-paypal { background-color: var(--paypal-blue); }
+       .theme-bank { background-color: var(--olfu-green); }
+
+
+
+
+       /* ====== MOBILE RESPONSIVENESS ====== */
+       /* student category (global) */
+       .student-category {
+           display: flex;
+           justify-content: flex-start;
+           align-items: center;
+           gap: 20px;
+           margin-bottom: 20px;
+           background: #f9f9f9;
+           padding: 15px;
+           border-radius: 8px;
+       }
+       .student-category label {
+           color: var(--olfu-green);
+           display: flex;
+           align-items: center;
+           gap: 5px;
+           font-weight: 700;
+           font-size: 1.1rem;
+       }
+       .student-category input[type="radio"] {
+           -webkit-appearance: none;
+           -moz-appearance: none;
+           appearance: none;
+           width: 20px;
+           height: 20px;
+           border: 2px solid var(--olfu-green);
+           border-radius: 4px;
+           position: relative;
+           cursor: pointer;
+       }
+       .student-category input[type="radio"]:checked::after {
+           content: "";
+           position: absolute;
+           top: 4px;
+           left: 4px;
+           width: 8px;
+           height: 8px;
+           background: var(--olfu-green);
+       }
+
+       @media (max-width: 768px) {
+           header { padding: 15px 20px; flex-direction: column; text-align: center; gap: 10px; }
+           .brand-container { flex-direction: column; }
+           .hero { padding: 0 20px; text-align: center; }
+           .form-input { width: 100%; }
+         
+           .strand-layout { flex-direction: column; height: auto; }
+           .left-side { padding: 50px 20px; }
+           .right-side { display: none; }
+           .strand-grid { grid-template-columns: 1fr; gap: 20px; }
+
+
+
+
+           .reg-card { padding: 30px; }
+           .form-grid { grid-template-columns: 1fr; }
+           .full-row { grid-column: span 1; }
+         
+           .fee-page .calculator-card { padding: 2rem; margin: 20px auto; }
+           .fee-page .btn-group { flex-direction: column; }
+           .fee-page button { max-width: 100%; }
+           .fee-page .fee-item { flex-wrap: wrap; }
+           .fee-page .price { width: 100%; text-align: right; margin-top: 5px; }
+
+
+
+
+           .pay-card { width: 100%; padding: 30px; }
+           .provider-grid { grid-template-columns: repeat(2, 1fr); }
+
+
+
+
+           .receipt-box { width: 100%; padding: 30px; }
+       }
+
+
+
+
+       @media print {
+           .no-print { display: none !important; }
+           body { background: white; }
+           .receipt-box { border: none; box-shadow: none; width: 100%; position: absolute; top: 0; }
+       }
+   </style>
+</head>
+<body>
+
+
+
+
+<div id="loader"><h1>Processing Transaction... </h1><p>Veritas et Misericordia</p></div>
+
+
+
+
+<header class="no-print">
+   <div class="brand-container">
+       <div class="logo-placeholder">
+           <img src="https://fatima.edu.ph/wp-content/uploads/2021/11/olfu-logo-with-name.png" alt="OLFU Logo">
+       </div>
+       <h1 class="brand-text">Our Lady of Fatima University Laguna</h1>
+   </div>
+</header>
+
+
+
+
+<!-- ===== LOGIN PAGE ===== -->
+<main id="login-page" class="page active no-print">
+   <section class="hero">
+       <!-- NEW: Background Slider Transition Images -->
+       <div class="bg-slider">
+           <div class="slide slide-1"></div>
+           <div class="slide slide-2"></div>
+           <div class="slide slide-3"></div>
+           <div class="slide-overlay"></div>
+       </div>
+
+
+
+
+       <!-- FIRST TAB -->
+       <div class="login-container" style="position: relative; z-index: 1; max-width: 800px; margin-top: 20px; background: rgba(0, 0, 0, 0.35); padding: 50px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.15);">
+           <h2 style="font-size: 3.2rem; font-weight: 700; margin-bottom: 15px; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Sign In</h2>
+           <p style="line-height: 1.7; color: #eeeeee; margin-bottom: 30px; font-size: 0.9rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+               <strong>Please Read:</strong> For NEW students who want to enroll in OLFU-Laguna and become Fatimanians,
+               please click the "Apply Now" button to begin your application online. For students who have already
+               created an account during their Grade 11, please input your login credentials and click the
+               "Submit" button to access your account.
+           </p>
+           <form class="login-form" onsubmit="event.preventDefault(); showPage('reg-page');">
+               <input type="email" class="form-input" placeholder="Email" required>
+               <input type="password" class="form-input" placeholder="Password" required>
+               <div style="display: flex; gap: 15px; margin-top: 10px; width: 100%; justify-content: center;">
+                   <button type="submit" class="btn">Submit</button>
+                   <button type="button" class="btn" onclick="showPage('strand-page')">Apply Now</button>
+               </div>
+           </form>
+       </div>
+   </section>
+</main>
+
+
+
+
+<!-- ===== STRAND PAGE ===== -->
+<main id="strand-page" class="page no-print">
+   <div class="strand-layout">
+       <div class="left-side">
+           <img src="https://fatima.edu.ph/wp-content/uploads/2021/11/olfu-logo-with-name.png" width="350" style="transition: 0.3s;" onmouseover="this.style.animation='swing 0.5s ease-in-out'" onmouseout="this.style.animation='slideInUp 0.8s ease-out'">
+           <p style="margin-top: 20px; font-size: 1.2rem; text-align: center;">Select your desired <strong>STRAND</strong></p>
+           <div class="strand-grid">
+               <button class="strand-link" onclick="showPage('reg-page')">STEM</button>
+               <button class="strand-link" onclick="showPage('reg-page')">ABM</button>
+               <button class="strand-link" onclick="showPage('reg-page')">HUMSS</button>
+               <button class="strand-link" onclick="showPage('reg-page')">GAS</button>
+           </div>
+           <button class="btn-back" style="margin-top: 40px;" onclick="showPage('login-page')">BACK TO LOGIN</button>
+       </div>
+       <div class="right-side"></div>
+   </div>
+</main>
+
+
+
+
+<!-- ===== REGISTRATION PAGE ===== -->
+<main id="reg-page" class="page no-print">
+   <div class="reg-bg">
+       <form class="reg-card" onsubmit="event.preventDefault(); showPage('fee-page');">
+           <h2 style="color:var(--olfu-green); text-align:center; margin-bottom:5px; font-weight: 800;">PAYTIMA REGISTRATION</h2>
+           <p style="text-align: center; color: #777; font-size: 0.8rem; margin-bottom: 25px;">Note: Input <strong>N/A</strong> if information is not applicable.</p>
+         
+           <div class="form-grid">
+               <label>First Name <input type="text" class="reg-input" id="fName" required></label>
+               <label>Last Name <input type="text" class="reg-input" id="lName" required></label>
+               <label>Middle Name <input type="text" class="reg-input" placeholder="Enter N/A if none" required></label>
+               <label>Suffix <input type="text" class="reg-input" placeholder="e.g. Jr. (N/A if none)" required></label>
+               <label>Date of Birth <input type="date" class="reg-input" required></label>
+               <label>Gender <select class="reg-input" required><option value="">-- Select --</option><option>Male</option><option>Female</option><option>Other</option></select></label>
+               <label>Status <select class="reg-input" required><option value="">-- Select --</option><option>Single</option><option>Married</option></select></label>
+               <label class="full-row">Address <input type="text" class="reg-input" id="addressInput" placeholder="Street, City, Province" required></label>
+               <label class="full-row">Email Address <input type="email" class="reg-input" id="emailInput" required></label>
+               <label>Mobile No. (+63) <input type="text" class="reg-input" id="contactInput" placeholder="9123456789" required></label>
+               <label>Year Level
+                   <select class="reg-input" id="yearLevelInput" required>
+                       <option value="">-- Select --</option>
+                       <option>Grade 11</option><option>Grade 12</option>
+                       <option>1st Year</option><option>2nd Year</option>
+                       <option>3rd Year</option><option>4th Year</option>
+                   </select>
+               </label>
+               <label>Mother's Name <input type="text" class="reg-input" placeholder="Full Name" required></label>
+               <label>Mother's Contact No. <input type="text" class="reg-input" placeholder="+63 9123456789" required></label>
+               <label>Father's Name <input type="text" class="reg-input" placeholder="Full Name" required></label>
+               <label>Father's Contact No. <input type="text" class="reg-input" placeholder="+63 9123456789" required></label>
+               <label class="full-row">Last School Attended <input type="text" class="reg-input" id="lastSchoolInput" required></label>
+               <label class="full-row">Proof of Last School Attended <input type="file" class="reg-input" accept=".pdf,.jpg,.png" required></label>
+               <label>School Year <input type="text" class="reg-input" value="2025-2026" required></label>
+               <label>Semester <select class="reg-input" id="semesterInput" required><option value="">-- Select --</option><option>1st Sem</option><option>2nd Sem</option></select></label>
+             
+               <div class="full-row" style="display: flex; gap: 10px; margin-top: 20px; align-items: center;">
+                   <button type="button" class="btn-back" style="flex: 1; height: 50px; border-radius: 8px; padding: 12px 35px; text-transform: uppercase; font-size: 0.8rem; font-weight: 700;" onclick="showPage('strand-page')">BACK</button>
+                   <button type="submit" class="btn" style="flex: 1; background: var(--olfu-green); border:none; border-radius: 8px; height: 50px;">Next</button>
+               </div>
+           </div>
+       </form>
+   </div>
+</main>
+
+
+
+
+<!-- ===== FEE CALCULATOR PAGE ===== -->
+<main id="fee-page" class="page no-print fee-page">
+   <div class="calculator-card">
+       <div id="tab1" class="tab-content active">
+           <h3>Step 1: School Background</h3>
+           <p style="color: #666;">Please choose your previous school type:</p>
+           <div class="option-box" onclick="selectSchool('public', this)">Public School</div>
+           <div class="option-box" onclick="selectSchool('private', this)">Private School</div>
+       </div>
+
+
+
+
+       <div id="tab2" class="tab-content">
+           <h3>Step 2: Payment Instructions</h3>
+           <div class="guide-scroll">
+               <p><strong>PLEASE BE GUIDED:</strong></p>
+
+
+
+
+               <div class="guide-block">
+                   <span class="category-header">REGULAR students</span>
+                   <span class="sub-header">PUBLIC HIGH SCHOOL COMPLETER (NON- REFUNDABLE)</span>
+                   <span class="fee-line">Php 500 – Application Fee</span>
+                   <span class="fee-line">Php 900– Learning Modality Fee (per Sem only) or Php 1,800 per year</span>
+
+
+
+
+                   <span class="sub-header">PRIVATE HIGH SCHOOL COMPLETER (NON-REFUNDABLE)</span>
+                   <span class="fee-line">Php 500 – Application Fee</span>
+                   <span class="fee-line">Php 900 – Learning Modality Fee (per Sem only) or Php 1,800 per year</span>
+                   <span class="fee-line">Php 1,500 – Tuition Fee Minimum Down Payment</span>
+               </div>
+
+
+
+
+               <div class="guide-block">
+                   <span class="category-header">PLUS students</span>
+                   <p><strong>MINIMUM REQUIRED FEES</strong></p>
+
+
+
+
+                   <span class="sub-header">PUBLIC HIGH SCHOOL COMPLETER (NON- REFUNDABLE)</span>
+                   <span class="fee-line">Php 500 – Application Fee</span>
+                   <span class="fee-line">Php 900 – Learning Modality Fee (per Sem only) or Php 1,800 per year</span>
+
+
+
+
+                   <span class="sub-header">PRIVATE HIGH SCHOOL COMPLETER (NON-REFUNDABLE)</span>
+                   <span class="fee-line">Php 500 – Application Fee</span>
+                   <span class="fee-line">Php 900 – Learning Modality Fee (per Sem only) or Php 1,800 per year</span>
+                   <span class="fee-line">Php 1,500 – Tuition Fee Minimum Down Payment</span>
+                 
+                   <p style="margin-top: 15px;"><strong>OPTIONAL: ADD-ONS FOR SHS PLUS ENROLEES</strong> with an additional P15,000/ year - for inquiries, please proceed to the fee checklist and choose the plus student option. </p>
+               </div>
+           </div>
+           <div class="btn-group">
+               <button class="btn-back" onclick="changeTab(1)">Back</button>
+               <button class="btn-primary" onclick="changeTab(3)">Continue</button>
+           </div>
+       </div>
+
+
+
+
+       <!--  TERMS AND CONDITIONS -->
+       <div id="tab3" class="tab-content">
+           <h3>Step 3: Terms and Conditions</h3>
+           <div class="guide-scroll" style="height: 350px;">
+               <h4 style="margin-bottom: 15px; color: var(--olfu-green);">TERMS AND CONDITIONS</h4>
+               
+               <p><strong>1. Payment Methods and Authorization</strong></p>
+               <p>By completing a purchase on our website, you agree to provide valid payment information. We currently support payments via Gcash, Maya, and PayPal.</p>
+               <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
+                   <li>You are sought to acknowledge that payments are processed through these third-party providers.</li>
+                   <li>By submitting an order, you authorize us (through our processors) to charge the total amount of your purchase.</li>
+               </ul>
+
+
+
+
+               <p><strong>2. Transaction Security and Data Privacy</strong></p>
+               <p>We prioritize your financial safety.</p>
+               <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
+                   <li>While we facilitate the transaction, sensitive details like your Account number or PayPal password are never stored on our servers.</li>
+                   <li>To prevent fraud, we reserve the right to verify transactions. This may include verification through emails until payment is fully confirmed by the provider (especially relevant for Gcash or Maya transfers that may occasionally lag the website).</li>
+               </ul>
+
+
+
+
+               <p><strong>3. Refunds and Reversals</strong></p>
+               <p>All refund requests are subject to our standard Refund Policy.</p>
+               <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
+                   <li>Refunds for transactions made via GCash, Maya, or PayPal will generally be credited back to the original payment account used.</li>
+                   <li>Please note that while we may process a refund immediately, the time it takes for the funds to appear in your balance is determined by the respective platform (e.g., PayPal’s processing window).</li>
+               </ul>
+
+
+
+
+               <p><strong>4. User Responsibility for Errors</strong></p>
+               <p>The user is responsible for ensuring all payment details are accurate before confirming a transaction.</p>
+               <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
+                   <li>We are not liable for failed transactions or funds sent to the wrong account due to user error (such as entering the wrong mobile number for GCash/Maya).</li>
+                   <li>We are not responsible for delays or failures in payment caused by downtime or technical issues on the side of GCash, Maya, or PayPal.</li>
+               </ul>
+           </div>
+
+
+
+
+           <div class="disclaimer" style="margin-top: 20px;">
+               <label style="display: flex; align-items: center;">
+                   <input type="checkbox" id="terms-agree-box" onchange="toggleTermsBtn()">
+                   <span>I have read and agree to the Terms and Conditions stated above.</span>
+               </label>
+           </div>
+
+
+
+
+           <div class="btn-group">
+               <button class="btn-back" onclick="changeTab(2)">Back</button>
+               <button class="btn-primary" id="btn-terms-continue" disabled onclick="changeTab(4)">Continue</button>
+           </div>
+       </div>
+       
+       <!-- Checklist -->
+       <div id="tab4" class="tab-content">
+           <h3>Step 4: Fee Checklist</h3>
+         
+           <p>Choose Student Category:</p>
+           <div class="student-category">
+               <label><input type="radio" name="studentType" value="regular" checked onchange="calculateTotal()"> Regular Student</label>
+               <label><input type="radio" name="studentType" value="plus" onchange="calculateTotal()"> Plus Student</label>
+           </div>
+
+
+
+
+           <div class="item-list">
+               <div class="fee-item">
+                   <input type="checkbox" id="check-app" checked disabled>
+                   <label for="check-app">Application Fee (required)</label>
+                   <span class="price">₱500</span>
+               </div>
+
+
+
+
+               <div class="fee-item">
+                   <input type="checkbox" id="check-mod" checked onchange="calculateTotal()">
+                   <label for="check-mod">Learning Modality Fee</label>
+                   <select id="modality-qty" onchange="calculateTotal()">
+                       <option value="1">1 Sem (₱900)</option>
+                       <option value="2">Full Year (₱1,800)</option>
+                   </select>
+                   <span class="price" id="modality-price">₱900</span>
+               </div>
+
+
+
+
+               <div class="fee-item" id="row-private" style="display:none;">
+                   <input type="checkbox" id="check-priv" checked onchange="calculateTotal()">
+                   <label for="check-priv">Tuition Fee Minimum Down Payment</label>
+                   <span class="price">₱1,500</span>
+               </div>
+
+
+
+
+               <div class="fee-item" id="row-plus" style="display:none;">
+                   <input type="checkbox" id="check-plus" checked onchange="calculateTotal()">
+                   <label for="check-plus">Additional Fees (Plus)</label>
+                   <span class="price">₱15,000</span>
+               </div>
+           </div>
+
+
+
+
+           <div class="total-section">
+               <span style="font-size: 0.9rem; color: #666; text-transform: uppercase;">Total Amount to Pay:</span>
+               <span id="total-amount" class="total-amount-text">₱0</span>
+           </div>
+
+
+
+
+           <div class="disclaimer">
+               <label style="display: flex; align-items: flex-start;">
+                   <input type="checkbox" id="agreement" onchange="toggleConfirmBtn()" style="margin-top: 3px;">
+                   <span><i>By clicking this, I fully understand that I am responsible for all applicable fees that are listed above. I acknowledge that these charges are non-refundable and authorize the immediate processing of my payment.</i></span>
+               </label>
+           </div>
+
+
+
+
+           <div class="btn-group">
+               <button class="btn-back" onclick="changeTab(3)">Back</button>
+               <button class="btn-primary" id="confirm-btn" disabled onclick="proceedToPayment()">Confirm and Proceed to Payment</button>
+           </div>
+       </div>
+   </div>
+</main>
+
+
+
+
+<!-- ===== PAYMENT PAGE ===== -->
+<main id="pay-page" class="page no-print">
+   <div class="pay-page-bg">
+       <form class="pay-card" onsubmit="event.preventDefault();">
+           <h2>PAYTIMA CHECKOUT</h2>
+           <p class="sub">OLFU Laguna Enrollment System</p>
+         
+           <div class="amount-box">
+               <label>Total Amount Due</label>
+               <div class="amount-display" id="displayAmount">₱0.00</div>
+               <input type="hidden" id="payAmount">
+           </div>
+
+
+
+
+           <div class="pay-method-tabs">
+               <button type="button" id="onlineBtn" class="method-btn active" onclick="setMethod('Online')">Online Payment</button>
+               <button type="button" id="physicalBtn" class="method-btn" onclick="setMethod('Physical')">Cashier (On-site)</button>
+           </div>
+
+
+
+
+           <!-- ONLINE OPTIONS GRID -->
+           <div id="online-options">
+               <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Select Online Payment:</p>
+               <div class="provider-grid">
+                   <div class="provider-btn" onclick="openPaymentModal('GCash')">
+                       <span style="color: #007DFE; font-size: 1rem;">GCash</span>
+                   </div>
+                   <div class="provider-btn" onclick="openPaymentModal('PayPal')">
+                       <span style="color: #003087; font-size: 1rem;">PayPal</span>
+                   </div>
+                   <div class="provider-btn" onclick="openPaymentModal('Maya')">
+                       <span style="color: #232323; font-size: 1rem;">Maya</span>
+                   </div>
+                   <div class="provider-btn" onclick="openPaymentModal('UnionBank')">
+                       <span>UnionBank</span>
+                   </div>
+                   <div class="provider-btn" onclick="openPaymentModal('MetroBank')">
+                       <span>MetroBank</span>
+                   </div>
+                   <div class="provider-btn" onclick="openPaymentModal('DragonPay')">
+                       <span>DragonPay</span>
+                   </div>
+               </div>
+           </div>
+
+
+
+
+           <!-- PHYSICAL BUTTON -->
+           <div id="physical-options" style="display: none; text-align: center; margin-top: 20px;">
+               <p style="margin-bottom: 20px; color: #555;">Please proceed to the Finance Office for payment. Present your reference number upon payment.</p>
+               <button type="button" class="btn" style="background:var(--olfu-green); border:none; border-radius: 8px; height: 50px; width: 100%;" onclick="handleFinal()">Confirm Physical Payment</button>
+           </div>
+
+
+
+
+           <div style="margin-top: 30px;">
+               <button type="button" class="btn-back" style="width: 100%; margin:0;" onclick="showPage('reg-page')">CANCEL / BACK</button>
+           </div>
+       </form>
+   </div>
+</main>
+
+
+
+
+<!-- ===== VERIFICATION PAGE ===== -->
+<main id="verify-page" class="page no-print">
+   <div style="display:flex; justify-content:center; padding:40px;">
+       <div style="width:100%; max-width:520px; background:#fff; padding:30px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.06);">
+           <h2 style="color:var(--olfu-green); margin-bottom:6px;">Payment Verification</h2>
+           <p style="color:#666; margin-bottom:16px;"><strong>✓ A 6-digit verification code has been automatically generated and sent to your registered email.</strong> Enter it below to confirm your payment.</p>
+
+
+
+
+           <div class="modal-input-group">
+               <label>Verification Code</label>
+               <input id="verifyInputPage" type="text" class="modal-input" maxlength="6" placeholder="Enter 6-digit code">
+           </div>
+
+
+
+
+           <div style="display:flex; gap:10px; margin-top:18px;">
+               <button class="btn-back" style="flex:1;" onclick="resendVerificationFromPage()">Resend Code</button>
+               <button class="btn" style="flex:1; background:var(--olfu-green); color:white; border:none;" onclick="verifyCodeFromPage()">Verify Code</button>
+           </div>
+
+
+
+
+           <p id="verifyPageMsg" style="margin-top:12px; color:#c0392b; display:none;"></p>
+
+
+
+
+           <div style="margin-top:18px;">
+               <button class="btn-back" style="width:100%;" onclick="showPage('pay-page')">Back to Payment</button>
+           </div>
+       </div>
+   </div>
+</main>
+
+
+
+
+<!-- ===== RECEIPT PAGE ===== -->
+<main id="receipt-page" class="page">
+   <div class="receipt-container">
+       <div class="receipt-box">
+           <div class="watermark">OFFICIAL RECEIPT</div>
+           <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px;">
+               <img src="https://fatima.edu.ph/wp-content/uploads/2021/11/olfu-logo-with-name.png" width="200">
+               <h2 style="color:var(--olfu-green); margin-top:10px;">OFFICIAL RECEIPT</h2>
+           </div>
+           <div class="success-badge">PAYMENT SUCCESSFUL</div>
+           <div class="receipt-row"><span>Ref No:</span><span id="resRef"></span></div>
+           <div class="receipt-row"><span>Student Name:</span><span id="resName"></span></div>
+           <div class="receipt-row"><span>Email:</span><span id="resEmail"></span></div>
+           <div class="receipt-row"><span>Method:</span><span id="resMethod">Online</span></div>
+           <div class="receipt-row"><span>Platform:</span><span id="resPlatform">N/A</span></div>
+
+           <!-- page breakdown (summary only) -->
+           <div style="margin-top: 20px; border-top: 2px dashed var(--olfu-green);"></div>
+           <h3 style="color:var(--olfu-green); font-weight:700; margin-top:10px;">Page Breakdown</h3>
+           <div id="resBreakdown" style="margin-top: 18px;"></div>
+
+           <!-- itemized fees (generated dynamically) -->
+           <div id="resItems"></div>
+           <div class="receipt-row" style="border-top: 2px solid #eee; padding-top: 15px; margin-top: 20px;">
+               <span>Total Amount:</span>
+               <span id="resAmt" style="font-size: 1.4rem; color: var(--olfu-green);"></span>
+           </div>
+
+           <div class="no-print" style="margin-top: 40px; display: flex; flex-direction: column; gap: 10px;">
+               <button class="btn" style="background: var(--olfu-green); border: none; width: 100%; height: 50px;" onclick="window.print()">Print Official Receipt</button>
+               <button class="btn" style="background: #333; border: none; width: 100%; height: 50px;" onclick="location.reload()">Logout</button>
+           </div>
+       </div>
+   </div>
+</main>
+
+
+
+
+<!-- ===== PAYMENT MODAL POPUP ===== -->
+<div id="payment-modal" class="modal">
+   <div class="modal-content">
+       <div class="modal-header" id="modal-header-bg">
+           <h3 id="modal-title">Payment</h3>
+           <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+       </div>
+       <div class="modal-body">
+           <!-- Dynamic Content -->
+           <div id="modal-dynamic-content"></div>
+       </div>
+       <div class="modal-footer">
+           <button class="btn-back" style="flex: 1; margin: 0;" onclick="closePaymentModal()">Cancel</button>
+           <button class="btn" id="modal-paid-btn" style="flex: 1; background: var(--olfu-green); color: white; border: none;" onclick="initiateVerification()">I Have Paid</button>
+       </div>
+   </div>
+</div>
+
+
+
+
+<script>
+   // --- INITIALIZE EMAILJS --- //
+   (function(){
+       emailjs.init("jz-XLFYKC9lc2cObc");
+   })();
+
+
+
+
+   /* ====== Logic Scripts ====== */
+   let selectedMethod = "Online";
+   let selectedPlatform = "";
+
+
+
+
+   function showPage(id) {
+       // Hide all pages first
+       document.querySelectorAll('.page').forEach(p => {
+           p.classList.remove('active');
+           p.style.display = 'none';
+       });
+
+
+
+
+       const el = document.getElementById(id);
+       if (!el) return;
+     
+       el.style.display = 'flex';
+       setTimeout(() => {
+           el.classList.add('active');
+       }, 10);
+
+
+
+
+       window.scrollTo(0,0);
+     
+       if(id === 'fee-page') {
+           calculateTotal();
+       }
+   }
+
+
+
+
+   function setMethod(method) {
+       selectedMethod = method;
+       document.getElementById('onlineBtn').classList.toggle('active', method === 'Online');
+       document.getElementById('physicalBtn').classList.toggle('active', method === 'Physical');
+     
+       const onlineOpts = document.getElementById('online-options');
+       const physOpts = document.getElementById('physical-options');
+     
+       if(method === 'Physical') {
+           onlineOpts.style.display = 'none';
+           physOpts.style.display = 'block';
+       } else {
+           onlineOpts.style.display = 'block';
+           physOpts.style.display = 'none';
+       }
+   }
+
+
+
+
+   /* ====== MODAL LOGIC ====== */
+   function openPaymentModal(provider) {
+       console.log('openPaymentModal called:', provider);
+       selectedPlatform = provider;
+       const modal = document.getElementById('payment-modal');
+       const header = document.getElementById('modal-header-bg');
+       const title = document.getElementById('modal-title');
+       const content = document.getElementById('modal-dynamic-content');
+
+
+
+
+       if (!modal || !header || !title || !content) {
+           console.error('Modal elements missing', { modal, header, title, content });
+           return;
+       }
+
+
+
+
+       // reset header classes
+       header.className = 'modal-header';
+
+
+
+
+   if (provider === 'GCash') {
+       header.classList.add('theme-gcash');
+       title.innerText = 'Pay with GCash';
+       content.innerHTML = `
+           <div class="modal-qr-container">
+               <img src="https://image2url.com/r2/default/images/1772639853372-03e45ab3-b64f-469b-804d-afc7271efbe8.jpg" alt="GCash QR">
+               <p style="margin-top:10px; font-weight:bold; color:#007DFE;">Scan to Pay</p>
+           </div>
+           <div class="modal-input-group">
+               <label>Upload Payment Screenshot</label>
+               <input type="file" class="modal-input" accept="image/*" required />
+           </div>
+       `;
+       
+    // determine QR image based on current pay amount
+           const amt = parseFloat(document.getElementById('payAmount')?.value) || 0;
+           let qrUrl = 'https://image2url.com/r2/default/images/1773909249550-55fe79bd-1eb1-4170-b7aa-87d651a66566.jpg';
+           if (amt === 900) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909430099-d54f2590-da0f-4ee5-b51a-16519768157f.jpg';
+           } else if (amt === 1400) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909448081-4229b08d-1f4e-4d98-9f88-51fe9898e363.jpg';
+           } else if (amt === 1800) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909529859-362f8536-6905-4153-90bf-3b16fc1c3a07.jpg';
+           } else if (amt === 2300) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909560621-6a97b28d-f4d5-4553-974a-1e4bd35a04ee.jpg';
+           }else if (amt === 3800)  {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909744407-b55d64ae-882f-483c-8bf4-94841d93e722.jpg';
+           } else if (amt === 15000) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909771074-d3bc1d13-1cb6-4c58-8b95-0883ce2cbe2f.jpg';
+           } else if (amt === 15500) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909827547-d04c4d0c-68aa-44b8-a408-29c4ffda2cf5.jpg';
+           } else if (amt === 15900) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909854713-46644815-8f34-49be-b192-92cbf1c51aca.jpg';
+           } else if (amt === 16400) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909867976-ccb3755c-d322-44eb-bb21-8b0ef2a00793.jpg';
+           } else if (amt === 16800) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909890152-7e33ac7f-8592-4b01-9fda-e2d9216c0577.jpg';
+           } else if (amt === 17300) {
+               qrUrl = 'https://image2url.com/r2/default/images/1773909906442-220905b9-704f-459b-a649-3675801a344f.jpg';
+           } ""
+           content.innerHTML = `
+               <div class="modal-qr-container">
+                   <img src="${qrUrl}" alt="GCash QR">
+                   <p style="margin-top:10px; font-weight:bold; color:#007DFE;">Scan to Pay</p>
+               </div>
+               <div class="modal-input-group">
+                   <label>Upload Payment Screenshot</label>
+                   <input type="file" class="modal-input" accept="image/*" required />
+               </div>
+           `; 
+       } else if (provider === 'Maya') {
+           header.classList.add('theme-maya');
+           title.innerText = 'Pay with Maya';
+           content.innerHTML = `
+               <div class="modal-qr-container">
+                   <img src="https://image2url.com/r2/default/images/1769623138720-0207eb4f-4c2a-4dea-b864-b2f7994f4e39.jpeg" alt="Maya QR">
+                   <p style="margin-top:10px; font-weight:bold; color:#232323;">Scan to Pay</p>
+               </div>
+               <div class="modal-input-group">
+                   <label>Upload Payment Screenshot</label>
+                   <input type="file" class="modal-input" accept="image/*" required />
+               </div>
+           `;
+       } else if (provider === 'PayPal') {
+           header.classList.add('theme-paypal');
+           title.innerText = 'Pay with PayPal';
+           content.innerHTML = `
+               <div class="modal-qr-container">
+                   <img src="https://image2url.com/r2/default/images/1769623096068-2bff36f1-d3c7-4ca5-bb9e-4681409b0ed9.jpeg" alt="PayPal QR">
+               </div>
+               <div class="modal-input-group">
+                   <label>Upload Payment Screenshot</label>
+                   <input type="file" class="modal-input" accept="image/*" required />
+               </div>
+           `;
+       } else if (provider === 'UnionBank') {
+           header.classList.add('theme-bank');
+           title.innerText = 'UnionBank Payment';
+           content.innerHTML = `
+               <div class="modal-instructions">
+                   <p><strong>Payment Instructions and Resources (both via app and desktop website)</strong></p>
+                   <ul style="margin-left: 20px; margin-top: 10px;">
+                       <li><a href="https://www.unionbankph.com/online/" target="_blank" rel="noopener">https://www.unionbankph.com/online/</a></li>
+                       <li><a href="https://www.unionbankph.com/unionbankonline/pay-bills" target="_blank" rel="noopener">https://www.unionbankph.com/unionbankonline/pay-bills</a></li>
+                   </ul>
+                   <p style="margin-top: 15px; color: var(--olfu-green); font-weight: bold;">Free for all students with a Unionbank Account</p>
+               </div>
+           `;
+       } else if (provider === 'MetroBank') {
+           header.classList.add('theme-bank');
+           title.innerText = 'MetroBank Payment';
+           content.innerHTML = `
+               <div class="modal-instructions">
+                   <p><strong>1. Payment Instructions and Resources</strong></p>
+                   <ul style="margin-left: 20px; margin-bottom: 10px;">
+                       <li><a href="https://metrobank.com.ph/manage/digitalservices" target="_blank" rel="noopener">Digital Services Guide</a></li>
+                       <li><a href="https://metrobank.com.ph/img/pay-bills.pdf" target="_blank" rel="noopener">Pay Bills PDF</a></li>
+                   </ul>
+                   <p>2. Banking fee is waived for all students who have a Metrobank Account.</p>
+                   <p>3. Online or Over-the-Counter payments made from 12midnight to 9PM will be reflected on your student ledger on the following business day.</p>
+                   <p><strong>4. Select Biller:</strong> Fatima University – Laguna/Valenzuela</p>
+                   <p><strong>5. Student ID:</strong> Use your Applicant Number</p>
+                   <p><strong>6. Student Name:</strong> Your full name</p>
+                   <p><strong>7. Billing Reference:</strong> SY 2024-2025</p>
+               </div>
+           `;
+       } else if (provider === 'DragonPay') {
+           header.classList.add('theme-bank');
+           title.innerText = 'DragonPay';
+           content.innerHTML = `
+               <div class="modal-instructions">
+                   <p>1. Proceed to the Dragonpay Biller gateway: <a href="https://bit.ly/LagunaDragonpay" target="_blank" rel="noopener">https://bit.ly/LagunaDragonpay</a></p>
+                   <p>2. Fill out the form correctly (Email, Ref Code).</p>
+                   <p>3. <strong>Reference Number:</strong> This is your Applicant Number received via email.</p>
+                   <p>4. Select payment option and check email for instructions.</p>
+                   <p>5. Secure your proof of payment, write name/applicant # on it, scan, and email to OLFU.</p>
+               </div>
+           `;
+       } else {
+           title.innerText = 'Payment';
+           content.innerHTML = '<p>Payment option not available.</p>';
+       }
+
+
+
+
+       // ensure modal visible
+       modal.style.display = 'flex';
+       modal.style.zIndex = '99999';
+       document.body.style.overflow = 'hidden';
+
+
+
+
+       // modal input
+       setTimeout(() => {
+           const firstInput = content.querySelector('input, button, textarea, select');
+           if (firstInput) firstInput.focus();
+       }, 50);
+   }
+
+
+
+
+   function closePaymentModal() {
+       const modal = document.getElementById('payment-modal');
+       if (modal) modal.style.display = "none";
+       document.body.style.overflow = '';
+   }
+
+
+
+
+   // --- PAYMENT VERIFICATION ---
+   function initiateVerification() {
+       if (selectedMethod !== 'Online') return handleFinal();
+
+       // Require screenshot upload for QR-based payments
+       if (['GCash', 'PayPal', 'Maya'].includes(selectedPlatform)) {
+           const fileInput = document.querySelector('#modal-dynamic-content input[type="file"]');
+           if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+               alert('Please upload a payment screenshot before proceeding.');
+               return;
+           }
+       }
+
+
+
+
+       closePaymentModal();
+
+
+
+
+       const email = document.getElementById('emailInput').value;
+       if (!email) {
+           alert('Please provide an email address in the registration form before proceeding.');
+           return;
+       }
+
+
+
+
+       const code = Math.floor(100000 + Math.random() * 900000).toString();
+       const refNo = "OLFU-LAG-" + Math.floor(100000 + Math.random() * 900000);
+       window._paymentVerification = { code: code, expires: Date.now() + 5 * 60 * 1000, refNo: refNo };
+
+
+
+
+       const fName = document.getElementById('fName').value || '';
+       const lName = document.getElementById('lName').value || '';
+       const amt = document.getElementById('payAmount').value || '0.00';
+       const finalMethod = selectedPlatform || 'Online';
+
+
+
+
+       const message = `Thank you for using PAYTIMA. Your payment request is being processed.\n\nAmount: PHP ${parseFloat(amt).toLocaleString()}\nPayment Method: ${finalMethod}\n\nVerification Code: ${code}`;
+
+
+
+
+       const templateParams = {
+           student_name: fName + ' ' + lName,
+           to_email: email,
+           reference_no: refNo,
+           amount: 'PHP ' + parseFloat(amt).toLocaleString(),
+           payment_method: finalMethod,
+           message: message,
+           verification_code: code,
+           year_level: 'N/A',
+           semester: 'N/A',
+           last_school: 'N/A',
+           address: 'N/A',
+           contact_number: 'N/A'
+       };
+
+
+
+
+       console.log('Verification Email Params:', templateParams);
+
+
+
+
+       emailjs.send('service_wrzwe89', 'template_ciljo9y', templateParams)
+           .then(function(response) {
+               console.log('✓ Verification email sent successfully!', response);
+               alert('✓ Verification code has been sent to your email: ' + email);
+               showPage('verify-page');
+           }, function(err){
+               console.error('✗ Verification email failed:', err);
+               alert('Note: Email failed to send, but your automatic code is: ' + code);
+               showPage('verify-page');
+           });
+   }
+
+
+
+
+   function resendVerificationFromPage() {
+       if (!window._paymentVerification) {
+           initiateVerification();
+           return;
+       }
+
+
+
+
+       window._paymentVerification.code = Math.floor(100000 + Math.random() * 900000).toString();
+       window._paymentVerification.expires = Date.now() + 5 * 60 * 1000;
+
+
+
+
+       const email = document.getElementById('emailInput').value || '';
+       const fName = document.getElementById('fName').value || '';
+       const lName = document.getElementById('lName').value || '';
+       const amt = document.getElementById('payAmount').value || '0.00';
+       const finalMethod = selectedPlatform || 'Online';
+
+
+
+
+       const message = `Your new verification code is ${window._paymentVerification.code}. Use this to confirm your payment.`;
+       const templateParams = {
+           student_name: fName + ' ' + lName,
+           to_email: email,
+           reference_no: window._paymentVerification.refNo,
+           amount: 'PHP ' + parseFloat(amt).toLocaleString(),
+           payment_method: finalMethod,
+           message: message,
+           verification_code: window._paymentVerification.code,
+           year_level: 'N/A',
+           semester: 'N/A',
+           last_school: 'N/A',
+           address: 'N/A',
+           contact_number: 'N/A'
+       };
+
+
+
+
+       console.log('Resend Verification Email Params:', templateParams);
+
+
+
+
+       emailjs.send('service_wrzwe89', 'template_ciljo9y', templateParams)
+           .then(function(response) {
+               console.log('✓ Verification code resent successfully!', response);
+               alert('✓ Verification code resent to your email.');
+           }, function(err){
+               console.error('✗ Resend failed:', err);
+               alert('Failed to resend code — check console.');
+           });
+   }
+
+
+
+
+   function verifyCodeFromPage() {
+       const entry = document.getElementById('verifyInputPage');
+       const msg = document.getElementById('verifyPageMsg');
+       if (!entry) return;
+       const val = (entry.value || '').trim();
+       if (!window._paymentVerification) {
+           if (msg) { msg.innerText = 'No verification in progress.'; msg.style.display = 'block'; }
+           return;
+       }
+       if (Date.now() > window._paymentVerification.expires) {
+           if (msg) { msg.innerText = 'Verification code expired. Click Resend Code.'; msg.style.display = 'block'; }
+           return;
+       }
+       if (val === window._paymentVerification.code) {
+           delete window._paymentVerification;
+           if (msg) { msg.style.display = 'none'; }
+           handleFinal();
+       } else {
+           if (msg) { msg.innerText = 'Incorrect code. Please check your email and try again.'; msg.style.display = 'block'; }
+       }
+   }
+
+
+
+
+   // --- MAIN HANDLE FINAL ---
+   function handleFinal() {
+       closePaymentModal();
+       document.getElementById('loader').style.display = 'flex';
+ 
+       const fName = document.getElementById('fName').value;
+       const lName = document.getElementById('lName').value;
+       const email = document.getElementById('emailInput').value;
+       const amt = document.getElementById('payAmount').value;
+       
+       const yearLevel = document.getElementById('yearLevelInput')?.value || 'N/A';
+       const semester = document.getElementById('semesterInput')?.value || 'N/A';
+       const lastSchool = document.getElementById('lastSchoolInput')?.value || 'N/A';
+       const address = document.getElementById('addressInput')?.value || 'N/A';
+       const contact = document.getElementById('contactInput')?.value || 'N/A';
+ 
+       const refNo = "OLFU-LAG-" + Math.floor(100000 + Math.random() * 900000);
+       const finalMethod = selectedMethod === 'Online' ? selectedPlatform : 'Cashier (On-site)';
+
+
+
+
+       const templateParams = {
+           student_name: fName + " " + lName,
+           to_email: email,
+           reference_no: refNo,
+           amount: "PHP " + parseFloat(amt).toLocaleString(),
+           payment_method: finalMethod,
+           year_level: yearLevel,
+           semester: semester,
+           last_school: lastSchool,
+           address: address,
+           contact_number: contact
+       };
+
+
+
+
+       emailjs.send('service_wrzwe89', 'template_ciljo9y', templateParams)
+           .then(function() {
+               console.log('Email sent!');
+           }, function(error) {
+               console.log('Email failed...', error);
+           });
+
+
+
+
+       setTimeout(() => {
+           document.getElementById('loader').style.display = 'none';
+           document.getElementById('resRef').innerText = refNo;
+           document.getElementById('resName').innerText = fName + " " + lName;
+           document.getElementById('resEmail').innerText = email;
+           document.getElementById('resMethod').innerText = selectedMethod;
+           document.getElementById('resPlatform').innerText = finalMethod;
+           // fill itemized list
+           const items = getSelectedFees();
+           const itemsContainer = document.getElementById('resItems');
+           if (itemsContainer) {
+               itemsContainer.innerHTML = items.map(i =>
+                   `<div class="receipt-row"><span>${i.desc}</span><span>PHP ${i.amount.toLocaleString()}</span></div>`
+               ).join('');
+           }
+           // page breakdown (summary)
+           const breakdownContainer = document.getElementById('resBreakdown');
+           if (breakdownContainer) {
+               const isPlus = document.querySelector('.fee-page input[name="studentType"]:checked')?.value === 'plus';
+               const studentTypeLabel = isPlus ? 'Plus Student' : 'Regular Student';
+               breakdownContainer.innerHTML = `
+                   <div class="receipt-row"><span>Student Category:</span><span>${studentTypeLabel}</span></div>
+               `;
+           }
+           document.getElementById('resAmt').innerText = "PHP " + parseFloat(amt).toLocaleString(undefined, {minimumFractionDigits: 2});
+           showPage('receipt-page');
+       }, 1500);
+   }
+
+
+
+
+   /* ====== Fee Calculator ====== */
+   let schoolType = '';
+
+
+
+
+   function selectSchool(type, el) {
+       schoolType = type;
+       document.querySelectorAll('.fee-page .option-box').forEach(box => box.classList.remove('selected'));
+       if (el) el.classList.add('selected');
+       document.getElementById('row-private').style.display = (type === 'private') ? 'flex' : 'none';
+       setTimeout(() => changeTab(2), 250);
+   }
+
+
+
+
+   function changeTab(num) {
+       document.querySelectorAll('.fee-page .tab-content').forEach(tab => tab.classList.remove('active'));
+       document.getElementById('tab' + num).classList.add('active');
+       window.scrollTo(0,0);
+       calculateTotal();
+   }
+
+
+
+
+   function calculateTotal() {
+       let total = 0;
+       // Application fee is mandatory
+       const appFeeEl = document.getElementById('check-app');
+       if (appFeeEl) total += 500;
+       const qty = document.getElementById('modality-qty') ? parseInt(document.getElementById('modality-qty').value, 10) : 1;
+       const modVal = qty * 900;
+       const modPriceEl = document.getElementById('modality-price');
+       if (modPriceEl) modPriceEl.textContent = "₱" + modVal.toLocaleString();
+       if (document.getElementById('check-mod') && document.getElementById('check-mod').checked) total += modVal;
+       if (schoolType === 'private') {
+           document.getElementById('row-private').style.display = 'flex';
+           if (document.getElementById('check-priv') && document.getElementById('check-priv').checked) total += 1500;
+       } else {
+           if (document.getElementById('row-private')) document.getElementById('row-private').style.display = 'none';
+       }
+       const isPlus = document.querySelector('.fee-page input[name="studentType"]:checked') && document.querySelector('.fee-page input[name="studentType"]:checked').value === 'plus';
+       if (isPlus) {
+           document.getElementById('row-plus').style.display = 'flex';
+           if (document.getElementById('check-plus') && document.getElementById('check-plus').checked) total += 15000;
+       } else {
+           document.getElementById('row-plus').style.display = 'none';
+       }
+       document.getElementById('total-amount').textContent = "₱" + total.toLocaleString();
+   }
+
+
+
+
+   function toggleConfirmBtn() {
+       const btn = document.getElementById('confirm-btn');
+       if (!btn) return;
+       btn.disabled = !document.getElementById('agreement').checked;
+   }
+
+   // build list of selected fees with description and numeric amount
+   function getSelectedFees() {
+       const items = [];
+       // application fee (always required)
+       if (document.getElementById('check-app')) {
+           items.push({ desc: 'Application Fee', amount: 500 });
+       }
+       // modality fee
+       if (document.getElementById('check-mod') && document.getElementById('check-mod').checked) {
+           const qty = document.getElementById('modality-qty') ? parseInt(document.getElementById('modality-qty').value, 10) : 1;
+           const modVal = qty * 900;
+           items.push({ desc: `Learning Modality Fee (${qty})`, amount: modVal });
+       }
+       // private school fee
+       if (schoolType === 'private' && document.getElementById('check-priv') && document.getElementById('check-priv').checked) {
+           items.push({ desc: 'Private School Fee', amount: 1500 });
+       }
+       // plus student fee
+       const isPlus = document.querySelector('.fee-page input[name="studentType"]:checked') &&
+                      document.querySelector('.fee-page input[name="studentType"]:checked').value === 'plus';
+       if (isPlus && document.getElementById('check-plus') && document.getElementById('check-plus').checked) {
+           items.push({ desc: 'Plus Student Fee', amount: 15000 });
+       }
+       return items;
+   }
+
+
+
+
+   function toggleTermsBtn() {
+       const btn = document.getElementById('btn-terms-continue');
+       if (!btn) return;
+       btn.disabled = !document.getElementById('terms-agree-box').checked;
+   }
+
+
+
+
+   function proceedToPayment() {
+       const totalText = document.getElementById('total-amount').textContent || "₱0";
+       const numeric = parseFloat(totalText.replace(/[^\d.-]+/g,"")) || 0;
+     
+       const payAmountInput = document.getElementById('payAmount');
+       const displayAmount = document.getElementById('displayAmount');
+     
+       if (payAmountInput) payAmountInput.value = numeric.toFixed(2);
+       if (displayAmount) displayAmount.innerText = "₱" + numeric.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+
+
+
+       setMethod('Online');
+       showPage('pay-page');
+   }
+
+
+
+
+   window.onclick = function(event) {
+       const modal = document.getElementById('payment-modal');
+       if (event.target == modal) {
+           modal.style.display = "none";
+           document.body.style.overflow = '';
+       }
+   }
+
+
+
+
+   document.addEventListener('DOMContentLoaded', () => {
+       if (document.getElementById('fee-page') && document.getElementById('fee-page').classList.contains('active')) {
+           calculateTotal();
+       }
+   });
+</script>
+
+
+
+
+</body>
+</html>
+
+

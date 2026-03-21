@@ -1,2 +1,0 @@
-# PAYTIMA
-Payment system

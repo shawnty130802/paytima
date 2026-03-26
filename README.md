@@ -1,3 +1,4 @@
+
 <html lang="en">
 <head>
    <meta charset="UTF-8">
@@ -488,13 +489,14 @@
                created an account during their Grade 11, please input your login credentials and click the
                "Submit" button to access your account.
            </p>
-           <form class="login-form" onsubmit="event.preventDefault(); showPage('reg-page');">
-               <input type="email" class="form-input" placeholder="Email" required>
-               <input type="password" class="form-input" placeholder="Password" required>
+           <form class="login-form" onsubmit="event.preventDefault(); validateLogin();">
+               <input type="email" class="form-input" id="loginEmail" placeholder="Email" required>
+               <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
                <div style="display: flex; gap: 15px; margin-top: 10px; width: 100%; justify-content: center;">
                    <button type="submit" class="btn">Submit</button>
                    <button type="button" class="btn" onclick="showPage('strand-page')">Apply Now</button>
                </div>
+               <p id="loginError" style="color: #ff6b6b; margin-top: 10px; text-align: center; display: none; font-size: 0.9rem;"></p>
            </form>
        </div>
    </section>
@@ -527,7 +529,7 @@
 <!-- ===== REGISTRATION PAGE ===== -->
 <main id="reg-page" class="page no-print">
    <div class="reg-bg">
-       <form class="reg-card" onsubmit="event.preventDefault(); showPage('fee-page');">
+       <form class="reg-card" onsubmit="event.preventDefault(); goToPaymentFromSubmit();">
            <h2 style="color:var(--olfu-green); text-align:center; margin-bottom:5px; font-weight: 800;">PAYTIMA REGISTRATION</h2>
            <p style="text-align: center; color: #777; font-size: 0.8rem; margin-bottom: 25px;">Note: Input <strong>N/A</strong> if information is not applicable.</p>
          
@@ -667,21 +669,22 @@
 
 
 
-               <p><strong>3. Refunds and Reversals</strong></p>
-               <p>All refund requests are subject to our standard Refund Policy.</p>
+               <p><strong>3. No Refunds and Settlement of Transactions</strong></p>
+               <p>All transactions processed through the platform are strictly non-refundable.</p>
                <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
-                   <li>Refunds for transactions made via GCash, Maya, or PayPal will generally be credited back to the original payment account used.</li>
-                   <li>Please note that while we may process a refund immediately, the time it takes for the funds to appear in your balance is determined by the respective platform (e.g., PayPal’s processing window).</li>
+                   <li>By completing a payment, you acknowledge and agree that the service or product is provided on a final-sale basis. It cannot be returned, exchanged, or refunded.</li>
+                   <li>Please note that all transactions are final and we do not provide credits or reversals for any circumstances, such as service cancellation, or changes of mind.</li>
                </ul>
 
 
 
 
-               <p><strong>4. User Responsibility for Errors</strong></p>
-               <p>The user is responsible for ensuring all payment details are accurate before confirming a transaction.</p>
+               <p><strong>4. QR-Based Payments and Automated Processing</strong></p>
+               <p>Our system utilizes QR-based technology to automatically prepare the payment details.</p>
                <ul style="margin: 10px 0 20px 20px; font-size: 0.95rem; color: #555;">
-                   <li>We are not liable for failed transactions or funds sent to the wrong account due to user error (such as entering the wrong mobile number for GCash/Maya).</li>
-                   <li>We are not responsible for delays or failures in payment caused by downtime or technical issues on the side of GCash, Maya, or PayPal.</li>
+                   <li>User Verification: It is the user’s sole responsibility to ensure they are scanning the correct and official QR code provided by our system. Use our payment checklist to customize your transaction and choose only the specific items you wish to process today.</li>
+                   <li>System Integrity: Since payment details (amount and recipient) are automatically generated via the QR code, we are not liable for any discrepancies resulting from third-party app malfunctions.</li>
+                   <li>Third-Party Failures: We are not responsible for transaction failures, delays, or technical issues caused by downtime on the side of payment providers (e.g., GCash, Maya, or PayPal).</li>
                </ul>
            </div>
 
@@ -1005,6 +1008,35 @@
    }
 
 
+
+
+   function goToPaymentFromSubmit() {
+       // Go directly to Terms and Conditions (Step 2) before full payment flow
+       calculateTotal();
+       showPage('fee-page');
+       changeTab(2); // payment instructions step
+   }
+
+
+   // Login Database - Simple Credential Verification
+   const validCredentials = {
+       email: 'sdrodriguez0182lag@student.fatima.edu.ph',
+       password: '!Admin05132008'
+   };
+
+   function validateLogin() {
+       const emailInput = document.getElementById('loginEmail')?.value || '';
+       const passwordInput = document.getElementById('loginPassword')?.value || '';
+       const errorMsg = document.getElementById('loginError');
+
+       if (emailInput === validCredentials.email && passwordInput === validCredentials.password) {
+           errorMsg.style.display = 'none';
+           goToPaymentFromSubmit();
+       } else {
+           errorMsg.innerText = 'Invalid email or password. Please try again.';
+           errorMsg.style.display = 'block';
+       }
+   }
 
 
    function setMethod(method) {
@@ -1603,5 +1635,3 @@
 
 </body>
 </html>
-
-

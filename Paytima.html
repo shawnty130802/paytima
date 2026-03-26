@@ -489,13 +489,14 @@
                created an account during their Grade 11, please input your login credentials and click the
                "Submit" button to access your account.
            </p>
-           <form class="login-form" onsubmit="event.preventDefault(); goToPaymentFromSubmit();">
-               <input type="email" class="form-input" placeholder="Email" required>
-               <input type="password" class="form-input" placeholder="Password" required>
+           <form class="login-form" onsubmit="event.preventDefault(); validateLogin();">
+               <input type="email" class="form-input" id="loginEmail" placeholder="Email" required>
+               <input type="password" class="form-input" id="loginPassword" placeholder="Password" required>
                <div style="display: flex; gap: 15px; margin-top: 10px; width: 100%; justify-content: center;">
                    <button type="submit" class="btn">Submit</button>
                    <button type="button" class="btn" onclick="showPage('strand-page')">Apply Now</button>
                </div>
+               <p id="loginError" style="color: #ff6b6b; margin-top: 10px; text-align: center; display: none; font-size: 0.9rem;"></p>
            </form>
        </div>
    </section>
@@ -1014,6 +1015,27 @@
        calculateTotal();
        showPage('fee-page');
        changeTab(2); // payment instructions step
+   }
+
+
+   // Login Database - Simple Credential Verification
+   const validCredentials = {
+       email: 'sdrodriguez0182lag@student.fatima.edu.ph',
+       password: '!Admin05132008'
+   };
+
+   function validateLogin() {
+       const emailInput = document.getElementById('loginEmail')?.value || '';
+       const passwordInput = document.getElementById('loginPassword')?.value || '';
+       const errorMsg = document.getElementById('loginError');
+
+       if (emailInput === validCredentials.email && passwordInput === validCredentials.password) {
+           errorMsg.style.display = 'none';
+           goToPaymentFromSubmit();
+       } else {
+           errorMsg.innerText = 'Invalid email or password. Please try again.';
+           errorMsg.style.display = 'block';
+       }
    }
 
 
